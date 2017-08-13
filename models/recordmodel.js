@@ -6,9 +6,9 @@ var N1qlQuery = require('couchbase').N1qlQuery;
 function RecordModel() { };
 RecordModel.save = function(data, callback) {
     var jsonObject = {
-        firstname: data.firstname,
-        lastname: data.lastname,
-        email: data.email
+        name: data.name,
+        email: data.email,
+		imageURL:data.imageURL
     }
     var documentId = data.document_id ? data.document_id : uuid.v4();
     db.upsert(documentId, jsonObject, function(error, result) {
@@ -16,11 +16,15 @@ RecordModel.save = function(data, callback) {
             callback(error, null);
             return;
         }
-        callback(null, {message: "success", data: result});
+		
+		//var ans ={"userID":documentId, "responseCode":"1"};
+		var ans={"status":"Authenticated","userID":documentId,"responseCode":"1"};
+		
+        callback(null, ans);
     });
 }
 RecordModel.update = function(documentId,doc, callback) {
-	console.log(doc);
+	//console.log(doc);
 		RecordModel.getByDocumentId(documentId, function(error, result) {
 			if (error) {
 				return res.status(400).send(error);
@@ -32,14 +36,14 @@ RecordModel.update = function(documentId,doc, callback) {
             callback(error, null);
             return;
         }
-        callback(null, {message: "success", data: result});
+        callback(null, {"responseCode":"1"});
     });
 		
 			}
 		});
 }
 RecordModel.getByDocumentId = function(documentId, callback) {
-    var statement = "SELECT firstname, lastname, email " +
+    var statement = "SELECT name, email, imageURL " +
                     "FROM `" + config.couchbase.bucket + "` AS users " +
                     "WHERE META(users).id = $1";
     var query = N1qlQuery.fromString(statement);
@@ -47,7 +51,9 @@ RecordModel.getByDocumentId = function(documentId, callback) {
         if(error) {
             return callback(error, null);
         }
-        callback(null, result);
+		var ans={"info":result[0], "responseCode":"1"};	
+        callback(null, ans);
+		console.log(result);
     });
 };
 RecordModel.delete = function(documentId, callback) {
@@ -56,7 +62,7 @@ RecordModel.delete = function(documentId, callback) {
             callback(error, null);
             return;
         }
-        callback(null, {message: "success", data: result});
+        callback(null, {"responseCode":"1"});
     });
 };
 RecordModel.getAll = function(callback) {
